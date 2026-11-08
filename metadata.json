@@ -1,0 +1,6 @@
+{
+  "name": "Lavamc",
+  "description": "Lavamc Minecraft Server app and community portal with rank store, wallet payment system, and live server sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

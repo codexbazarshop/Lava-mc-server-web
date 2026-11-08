@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>অটো পে গেটওয়ে</title>
+<style>
+:root{--bg:#f3f4f7;--c:#fff;--t:#17181c;--m:#6b6f7a;--b:#e1e3ea;--bk:#e2136e;--ng:#f6921e}
+@media(prefers-color-scheme:dark){:root{--bg:#101114;--c:#1a1b20;--t:#eceef2;--m:#9a9fab;--b:#2a2c34}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t);font:15px/1.5 system-ui,"Noto Sans Bengali",sans-serif;padding-top:env(safe-area-inset-top,0px)}
+main{padding:16px 16px 96px;max-width:560px;margin:auto}
+h2{font-size:19px;margin:6px 0 14px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--c);border-top:1px solid var(--b);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--m);font-size:26px;padding:12px 0}
+nav button.on{color:var(--bk)}
+.card{background:var(--c);border:1px solid var(--b);border-radius:14px;padding:14px;margin-bottom:12px}
+.logos{display:flex;gap:22px;justify-content:center;margin:8px 0 18px}
+.logo{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;border:4px solid var(--bg);outline:3px solid transparent;opacity:.5}
+.logo.on{opacity:1;outline-color:var(--t)}
+textarea,input{width:100%;padding:11px;border:1px solid var(--b);border-radius:10px;background:var(--bg);color:var(--t);font:inherit;margin:4px 0 10px}
+textarea{min-height:140px;resize:vertical}
+.btn{width:100%;padding:13px;border:0;border-radius:10px;background:var(--bk);color:#fff;font:inherit;font-weight:700}
+.chips{display:flex;gap:8px;margin-bottom:12px}
+.chips button{flex:1;padding:9px;border:1px solid var(--b);border-radius:999px;background:var(--c);color:var(--t);font:inherit}
+.chips button.on{background:var(--t);color:var(--bg)}
+.row{display:flex;justify-content:space-between;align-items:center}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;color:#fff}
+.u{background:#1a8f5a}.n{background:#b7791f}
+small,label{color:var(--m)}
+#r{margin:10px 0 0;white-space:pre-line}
+</style></head><body>
+<main id="v"></main>
+<nav>
+<button aria-label="Home" onclick="go(0)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></button>
+<button aria-label="History" onclick="go(1)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 7v5l3 2"/></svg></button>
+<button aria-label="Menu" onclick="go(2)"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>
+</nav>
+<script>
+const $=s=>document.querySelector(s),L=localStorage,esc=s=>String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const DEF={url:'https://ekdyylbwgapxwsldaeoh.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZHl5bGJ3Z2FweHdzbGRhZW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjkwMzksImV4cCI6MjEwOTAwNTAzOX0.D6MwtPgA6IaGu7Rs5YbAtGiIE63oL3ijjRCN2g_JpRc',secret:'80b18461370e46518aa4'};
+let cfg={...DEF,...JSON.parse(L.gwcfg||'{}')},q=JSON.parse(L.gwq||'[]'),tab=0,flt='all';
+const sv=()=>L.gwq=JSON.stringify(q);
+
+async function rpc(f,b){
+ const h={apikey:cfg.key,'Content-Type':'application/json'};
+ if((cfg.key||'').startsWith('eyJ'))h.Authorization='Bearer '+cfg.key;
+ const r=await fetch((cfg.url||'').replace(/\/$/,'')+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)});
+ if(!r.ok)throw{h:r.status};return r.json()}
+const add=r=>rpc('gw_add',{p_secret:cfg.secret,p_trx:r.trx,p_provider:r.provider,p_amount:r.amount,p_sender:r.sender,p_raw:r.raw});
+
+const det=s=>/TrxID/i.test(s)?'bkash':/Txn\s?ID|Nagad/i.test(s)?'nagad':'';
+function parse(s){
+ const p=det(s),m=k=>(s.match(k)||[])[1],
+ trx=m(/(?:TrxID|Txn\s?ID)\s*[:\-]?\s*([A-Z0-9]{6,14})/i),
+ amt=m(/(?:received|Amount)\W{0,3}(?:Tk\.?|৳|BDT)\s*([\d,]+(?:\.\d+)?)/i)||m(/(?:Tk\.?|৳|BDT)\s*([\d,]+(?:\.\d+)?)/i);
+ if(!p||!trx||!amt||!/received/i.test(s))return null;
+ return{provider:p,trx:trx.toUpperCase(),amount:+amt.replace(/,/g,''),sender:m(/(01\d{9})/)||'',raw:s.trim().slice(0,500)}}
+
+// t = এসএমএস টেক্সট (একটা বা অনেকগুলো)। bKash/Nagad নিজেই চিনে নেয়। শুধু "টাকা পাওয়ার" মেসেজ নেয়, বাকি সব বাদ।
+async function ingest(t){
+ let ok=0,dup=0,bad=0,off=0,srv=0,code='';
+ for(const s of t.split(/(?=You have received|Money Received)/i)){
+  if(!s.trim())continue;
+  const r=parse(s);
+  if(!r){bad++;continue}
+  try{const x=await add(r);
+   if(x.err=='auth')return'❌ অ্যাডমিন সিক্রেট ভুল (সেটিংসে ঠিক সিক্রেট দিন)';
+   x.ok?ok++:x.err=='dup'?dup++:bad++}
+  catch(e){if(e.h){srv++;code=e.h}else{q.push(r);off++}}}
+ sv();return`✅ যোগ হয়েছে: ${ok}\nআগেই ছিল: ${dup}\nনেটের অপেক্ষায়: ${off}\nবাদ দেওয়া (টাকা পাওয়ার মেসেজ নয়): ${bad}`+(srv?`\n⚠️ সার্ভার এরর: ${srv}টি (HTTP ${code}), সেটিংস দেখুন`:'')}
+
+async function addMsg(){
+ const r=$('#r');
+ if(!cfg.url||!cfg.key||!cfg.secret){r.textContent='আগে সেটিংসে (⋮) URL, কী ও সিক্রেট দিন';return}
+ r.textContent='…';r.textContent=await ingest($('#t').value);$('#t').value=''}
+async function sync(){
+ if(!q.length||!cfg.url)return;const rest=[];
+ for(const r of q){try{await add(r)}catch(e){if(!e.h)rest.push(r)}}
+ q=rest;sv()}
+addEventListener('online',sync);
+// অ্যান্ড্রয়েড র‍্যাপার থেকে অটো এসএমএস পাঠাতে: window.onSms("এসএমএসের টেক্সট")
+window.onSms=t=>ingest(t).then(()=>tab==1&&loadPay(1));
+
+const home=()=>`<h2>নতুন পেমেন্ট</h2><div class="logos"><div class="logo on" style="background:var(--bk)">bKash</div><div class="logo on" style="background:var(--ng)">Nagad</div></div><div class="card"><textarea id="t" placeholder="টাকা পাওয়ার পুরো এসএমএস এখানে পেস্ট করুন। bKash বা Nagad নিজেই চিনে নেবে (একসাথে অনেকগুলোও চলবে)"></textarea><button class="btn" onclick="addMsg()">যোগ করুন</button><p id="r">${q.length?'নেটের অপেক্ষায়: '+q.length:''}</p></div>`;
+
+const set=()=>`<h2>সেটিংস</h2><div class="card"><label>Supabase URL</label><input id="u" value="${esc(cfg.url)}" placeholder="https://xxxx.supabase.co"><label>API Key (anon / publishable)</label><input id="k" value="${esc(cfg.key)}"><label>অ্যাডমিন সিক্রেট</label><input id="s" type="password" value="${esc(cfg.secret)}" placeholder="সিক্রেট একবার পেস্ট করুন"><button class="btn" onclick="saveCfg()">সেভ করে টেস্ট করুন</button><p id="r"></p></div>`;
+async function saveCfg(){
+ cfg={url:$('#u').value.trim(),key:$('#k').value.trim(),secret:$('#s').value};
+ L.gwcfg=JSON.stringify(cfg);const r=$('#r');
+ try{const d=await rpc('gw_list',{p_secret:cfg.secret});r.textContent='✅ কানেক্ট হয়েছে ('+d.length+'টি পেমেন্ট)';sync()}
+ catch(e){r.textContent='❌ কানেক্ট হয়নি। URL, কী, সিক্রেট ও নেট দেখুন'}}
+
+async function loadPay(silent){
+ const v=$('#v');if(!silent)v.innerHTML='<p>লোড হচ্ছে…</p>';
+ try{
+  const d=await rpc('gw_list',{p_secret:cfg.secret}),rows=d.filter(x=>flt=='all'||(flt=='used')==x.used),tot=a=>a.reduce((t,x)=>t+Number(x.amount||0),0);
+  if(tab!=1)return;
+  v.innerHTML=`<h2>পেমেন্ট হিস্টোরি</h2><p><small>মোট ${d.length}টি (৳${tot(d)}) · ব্যবহৃত ${d.filter(x=>x.used).length}টি · অব্যবহৃত ${d.filter(x=>!x.used).length}টি</small></p><div class="chips">${[['all','সব'],['unused','অব্যবহৃত'],['used','ব্যবহৃত']].map(([k,n])=>`<button class="${flt==k?'on':''}" onclick="flt='${k}';loadPay()">${n}</button>`).join('')}</div>`+
+  (rows.map(x=>`<div class="card"><div class="row"><b>${x.provider=='bkash'?'bKash':'Nagad'} ৳${x.amount}</b><span class="tag ${x.used?'u':'n'}">${x.used?'ব্যবহৃত':'অব্যবহৃত'}</span></div><small>${esc(x.trx_id)} · ${esc(x.sender||'-')}${x.buyer?'<br><b>'+esc(x.buyer)+' → '+esc((x.rank_name||'').trim())+'</b>'+(x.plan?' ('+esc(x.plan)+')':''):''}<br>${new Date(x.created_at).toLocaleString('bn-BD')}</small></div>`).join('')||'<p>এখনো কিছু নেই। হোম থেকে মেসেজ যোগ করুন।</p>')
+ }catch(e){if(!silent)v.innerHTML='<p>লোড হয়নি। সেটিংস আর নেট দেখুন।</p>'}}
+// হিস্টোরি পেজ খোলা থাকলে ১৫ সেকেন্ড পরপর নিজে নিজে নতুন করে নেয়
+setInterval(()=>{if(tab==1&&!document.hidden)loadPay(1)},15000);
+
+function render(){
+ document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('on',i==tab));
+ if(tab==1)return loadPay();
+ $('#v').innerHTML=tab?set():home()}
+const go=n=>{tab=n;render()};
+if(!cfg.url||!cfg.secret)tab=2;
+render();sync();
+</script></body></html>

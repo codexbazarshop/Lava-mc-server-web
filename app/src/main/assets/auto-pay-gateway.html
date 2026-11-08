@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>অটো পে গেটওয়ে</title>
+<style>
+:root{--bg:#f3f4f7;--c:#fff;--t:#17181c;--m:#6b6f7a;--b:#e1e3ea;--bk:#e2136e;--ng:#f7941d;--del:#e53e3e}
+@media(prefers-color-scheme:dark){:root{--bg:#101114;--c:#1a1b20;--t:#eceef2;--m:#9a9fab;--b:#2a2c34}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t);font:15px/1.5 system-ui,"Noto Sans Bengali",sans-serif;padding-top:env(safe-area-inset-top,0px)}
+main{padding:16px 16px 96px;max-width:560px;margin:auto}
+h2{font-size:19px;margin:6px 0 14px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--c);border-top:1px solid var(--b);padding-bottom:env(safe-area-inset-bottom,0px);z-index:99}
+nav button{flex:1;border:0;background:none;color:var(--m);font-size:26px;padding:12px 0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+nav button.on{color:var(--bk)}
+.card{background:var(--c);border:1px solid var(--b);border-radius:14px;padding:14px;margin-bottom:12px;position:relative}
+
+/* ব্র্যান্ড লোগো কার্ড */
+.logos{display:flex;gap:12px;justify-content:center;margin:8px 0 18px}
+.brand-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;border-radius:16px;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.08);position:relative;overflow:hidden}
+.brand-bkash{background:linear-gradient(135deg, #e2136e 0%, #b30e56 100%)}
+.brand-nagad{background:linear-gradient(135deg, #f7941d 0%, #ed1c24 100%)}
+.brand-title{font-size:16px;font-weight:800;margin-top:6px;letter-spacing:-0.2px}
+.brand-sub{font-size:11px;opacity:.92}
+
+textarea,input{width:100%;padding:11px;border:1px solid var(--b);border-radius:10px;background:var(--bg);color:var(--t);font:inherit;margin:4px 0 10px}
+textarea{min-height:130px;resize:vertical}
+.btn{width:100%;padding:13px;border:0;border-radius:10px;background:var(--bk);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.chips{display:flex;gap:8px;margin-bottom:12px}
+.chips button{flex:1;padding:9px;border:1px solid var(--b);border-radius:999px;background:var(--c);color:var(--t);font:inherit;cursor:pointer}
+.chips button.on{background:var(--t);color:var(--bg)}
+.row{display:flex;justify-content:space-between;align-items:center}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;color:#fff}
+.u{background:#1a8f5a}.n{background:#b7791f}
+small,label{color:var(--m)}
+.badge-lock{float:right;font-size:12px;color:#1a8f5a;font-weight:600}
+.notice-box{background:rgba(26,143,90,0.08);border:1px solid rgba(26,143,90,0.25);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:#1a8f5a}
+.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#1a8f5a;background:rgba(26,143,90,0.1);padding:4px 10px;border-radius:999px;margin-bottom:12px}
+.dot-pulse{width:7px;height:7px;border-radius:50%;background:#1a8f5a}
+#r{margin:10px 0 0;white-space:pre-line}
+
+/* অফলাইন ওয়ার্নিং ব্যানার */
+.offline-card{background:#d32f2f;color:#fff;border-radius:12px;padding:14px;margin-bottom:14px;display:none;box-shadow:0 4px 12px rgba(211,47,47,0.3)}
+.offline-card b{display:block;font-size:15px;margin-bottom:4px}
+.offline-card button{margin-top:10px;padding:8px 14px;background:#fff;color:#d32f2f;border:0;border-radius:8px;font-weight:700;cursor:pointer}
+
+/* হিস্টোরি ডিলিট বাটন */
+.btn-del{background:none;border:0;color:var(--del);padding:6px;cursor:pointer;border-radius:6px;display:inline-flex;align-items:center;justify-content:center}
+.btn-del:hover{background:rgba(229,62,62,0.1)}
+.btn-clear-all{background:none;border:1px solid var(--del);color:var(--del);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;float:right}
+
+/* ইন্ট্রো লোডিং স্ক্রিন */
+#splash-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s ease,visibility .4s}
+#splash-overlay.fade-out{opacity:0;visibility:hidden;pointer-events:none}
+.spinner-ring{width:46px;height:46px;border:3px solid rgba(226,19,110,0.2);border-top-color:var(--bk);border-radius:50%;animation:spin .8s linear infinite;margin-top:20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style></head><body>
+
+<!-- অ্যাপে ঢোকার সময়ের অ্যানিমেটেড লোডিং স্ক্রিন -->
+<div id="splash-overlay">
+  <div style="width:84px;height:84px;border-radius:22px;background:linear-gradient(135deg,#0E1626,#1A2438);box-shadow:0 10px 25px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;">
+    <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
+      <path d="M50 15L78 28V52C78 68 66 82 50 88C34 82 22 68 22 52V28L50 15Z" fill="#FBBF24" stroke="#F59E0B" stroke-width="4"/>
+      <path d="M40 50L48 58L65 40" stroke="#111827" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div style="margin-top:14px;font-size:18px;font-weight:800;letter-spacing:-0.3px;">অটো পে গেটওয়ে</div>
+  <div style="font-size:12px;color:var(--m);margin-top:4px;">নিরাপদ পেমেন্ট ভেরিফিকেশন…</div>
+  <div class="spinner-ring"></div>
+</div>
+
+<main id="v"></main>
+
+<nav>
+<button aria-label="Home" onclick="go(0)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></button>
+<button aria-label="History" onclick="go(1)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 7v5l3 2"/></svg></button>
+<!-- সেটিংস গিয়ার আইকন -->
+<button aria-label="Settings" onclick="go(2)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+</nav>
+
+<script>
+const $=s=>document.querySelector(s),L=localStorage,esc=s=>String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+// ডিফল্ট Supabase ক্রেডেনশিয়ালস (অপরিবর্তিত ও সুরক্ষিত)
+const DEF={url:'https://ekdyylbwgapxwsldaeoh.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZHl5bGJ3Z2FweHdzbGRhZW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjkwMzksImV4cCI6MjEwOTAwNTAzOX0.D6MwtPgA6IaGu7Rs5YbAtGiIE63oL3ijjRCN2g_JpRc',secret:'80b18461370e46518aa4'};
+let cfg={...DEF,...JSON.parse(L.gwcfg||'{}')},q=JSON.parse(L.gwq||'[]'),tab=0,flt='all';
+let isOnline = navigator.onLine !== false;
+const sv=()=>L.gwq=JSON.stringify(q);
+
+// ডিলিট করা ট্রানজেকশনের তালিকা (যাতে হিস্টোরি থেকে ডিলিট করলে আর না দেখায়)
+let delIds = JSON.parse(L.gw_del_ids || '[]');
+const saveDel=()=>L.gw_del_ids=JSON.stringify(delIds);
+
+async function rpc(f,b){
+ const h={apikey:cfg.key,'Content-Type':'application/json'};
+ if((cfg.key||'').startsWith('eyJ'))h.Authorization='Bearer '+cfg.key;
+ const r=await fetch((cfg.url||'').replace(/\/$/,'')+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)});
+ if(!r.ok)throw{h:r.status};return r.json()}
+const add=r=>rpc('gw_add',{p_secret:cfg.secret,p_trx:r.trx,p_provider:r.provider,p_amount:r.amount,p_sender:r.sender,p_raw:r.raw});
+
+// বিকাশ ও নগদ পেমেন্ট এসএমএস ডিটেকশন (ইংরেজি ও বাংলা উভয় ফরম্যাট)
+const det=s=>/TrxID|bKash|বিকাশ/i.test(s)?'bkash':/Txn\s?ID|Nagad|নগদ/i.test(s)?'nagad':'';
+function parse(s){
+ const p=det(s),m=k=>(s.match(k)||[])[1],
+ trx=m(/(?:TrxID|Txn\s?ID)\s*[:\-]?\s*([A-Z0-9]{6,14})/i),
+ amt=m(/(?:received|Amount|পরিমাণ)\W{0,4}(?:Tk\.?|৳|BDT)?\s*([\d,]+(?:\.\d+)?)/i)||m(/(?:Tk\.?|৳|BDT)\s*([\d,]+(?:\.\d+)?)/i);
+ // শুধুমাত্র বিকাশ বা নগদের আসল পেমেন্ট মেসেজ নেওয়া হবে, বাকি সব নিজে নিজেই বাদ হয়ে যাবে
+ if(!p||!trx||!amt||!/received|পেয়েছেন|প্রাপ্ত|জমা/i.test(s))return null;
+ return{provider:p,trx:trx.toUpperCase(),amount:+amt.replace(/,/g,''),sender:m(/(01\d{9})/)||'',raw:s.trim().slice(0,500)}}
+
+// এসএমএস অটোমেটিক যাচাই করে শুধু বিকাশ ও নগদ পেমেন্ট জমা রাখবে
+async function ingest(t){
+ let ok=0,dup=0,bad=0,off=0,srv=0,code='';
+ for(const s of t.split(/(?=You have received|Money Received|টাকা পেয়েছেন|আপনি পেয়েছেন)/i)){
+  if(!s.trim())continue;
+  const r=parse(s);
+  if(!r){bad++;continue}
+  try{const x=await add(r);
+   if(x.err=='auth')return'❌ অ্যাডমিন সিক্রেট ভুল (সেটিংসে ঠিক সিক্রেট দিন)';
+   x.ok?ok++:x.err=='dup'?dup++:bad++}
+  catch(e){if(e.h){srv++;code=e.h}else{q.push(r);off++}}}
+ sv();return`✅ যোগ হয়েছে: ${ok}\nআগেই ছিল: ${dup}\nনেটের অপেক্ষায়: ${off}\nবাদ দেওয়া হয়েছে (বিকাশ/নগদ পেমেন্ট নয়): ${bad}`+(srv?`\n⚠️ সার্ভার এরর: ${srv}টি (HTTP ${code}), সেটিংস দেখুন`:'')}
+
+async function addMsg(){
+ const r=$('#r');
+ if(!cfg.url||!cfg.key||!cfg.secret){r.textContent='আগে সেটিংসে URL, কী ও সিক্রেট দিন';return}
+ r.textContent='প্রসেস করা হচ্ছে…';r.textContent=await ingest($('#t').value);$('#t').value=''}
+
+async function sync(){
+ if(!q.length||!cfg.url)return;const rest=[];
+ for(const r of q){try{await add(r)}catch(e){if(!e.h)rest.push(r)}}
+ q=rest;sv()}
+
+// অনলাইন/অফলাইন হ্যান্ডলিং
+function updateNetUI(){
+ const box=$('#offline-alert');
+ if(box){box.style.display = isOnline ? 'none' : 'block'}
+}
+window.setOnlineStatus=status=>{
+ isOnline=status;
+ updateNetUI();
+ if(isOnline){sync();if(tab==1)loadPay(1)}
+};
+addEventListener('online',()=>{window.setOnlineStatus(true)});
+addEventListener('offline',()=>{window.setOnlineStatus(false)});
+
+// অ্যান্ড্রয়েড এসএমএস রিসিভার থেকে কল হয় (সম্পূর্ণ অটোমেটিক)
+window.onSms=t=>ingest(t).then(()=>tab==1&&loadPay(1));
+
+// ব্যাকগ্রাউন্ডে নীরব ইনবক্স অটো-স্ক্যান
+setTimeout(()=>{
+ if(window.Android && window.Android.scanInbox){
+  window.Android.scanInbox();
+ }
+},1200);
+
+// বিকাশ ও নগদ আসল এসভিজি লোগোসহ হোম স্ক্রিন
+const home=()=>`
+<div id="offline-alert" class="offline-card" style="${isOnline?'display:none':'display:block'}">
+  <b>⚠️ ইন্টারনেট সংযোগ নেই</b>
+  <span>অ্যাপটি সার্ভারে পেমেন্ট যুক্ত করতে ইন্টারনেট ব্যবহার করে। অনুগ্রহ করে ইন্টারনেট কানেক্ট করুন (কানেক্টেড নেট)।</span>
+  <br><button onclick="window.location.reload()">পুনরায় চেষ্টা করুন</button>
+</div>
+
+<h2>নতুন পেমেন্ট</h2>
+<div class="logos">
+  <div class="brand-card brand-bkash">
+    <svg width="44" height="44" viewBox="0 0 100 100" fill="none">
+      <path d="M48 18L82 18L64 50L48 18Z" fill="white"/>
+      <path d="M48 18L18 36L48 50L48 18Z" fill="white" fill-opacity="0.92"/>
+      <path d="M18 36L8 52L34 52L18 36Z" fill="white" fill-opacity="0.82"/>
+      <path d="M48 50L64 50L38 86L48 50Z" fill="white" fill-opacity="0.95"/>
+      <path d="M34 52L48 50L38 86L26 74L34 52Z" fill="white"/>
+    </svg>
+    <div class="brand-title">bKash</div>
+    <div class="brand-sub">বিকাশ পেমেন্ট</div>
+  </div>
+  <div class="brand-card brand-nagad">
+    <svg width="44" height="44" viewBox="0 0 100 100" fill="none">
+      <path d="M30 70C24 56 32 36 50 28C68 20 76 32 72 46C68 60 52 66 42 68L30 70Z" fill="white"/>
+      <path d="M46 62C52 58 58 48 54 40C50 32 40 38 38 46C36 54 42 60 46 62Z" fill="#F7941D"/>
+      <path d="M70 34C76 42 74 52 66 60C64 48 66 40 70 34Z" fill="white" fill-opacity="0.85"/>
+    </svg>
+    <div class="brand-title">নগদ</div>
+    <div class="brand-sub">Nagad পেমেন্ট</div>
+  </div>
+</div>
+
+<div class="card">
+<div class="status-pill"><span class="dot-pulse"></span> এসএমএস অটো-ডিটেকশন সক্রিয় (স্বয়ংক্রিয় যাচাই)</div>
+<textarea id="t" placeholder="বিকাশ বা নগদ থেকে টাকা পাওয়ার এসএমএস এখানে পেস্ট করতে পারেন (মোবাইলে মেসেজ আসলে অ্যাপ নিজে থেকেই যাচাই করে নিয়ে নিবে)"></textarea>
+<button class="btn" onclick="addMsg()">পেমেন্ট যোগ করুন</button>
+<p id="r">${q.length?'নেটের অপেক্ষায়: '+q.length:''}</p>
+</div>`;
+
+// হিস্টোরি থেকে সিঙ্গেল আইটেম ডিলিট
+function delPay(trxId){
+ if(!confirm('আপনি কি এই পেমেন্ট রেকর্ডটি ('+trxId+') মুছে ফেলতে চান?')) return;
+ if(!delIds.includes(trxId)){
+  delIds.push(trxId);
+  saveDel();
+ }
+ loadPay(1);
+}
+
+// সকল হিস্টোরি ডিলিট
+function clearAllHistory(currentTrxList){
+ if(!confirm('আপনি কি সকল পেমেন্ট হিস্টোরি মুছে ফেলতে চান?')) return;
+ for(const id of currentTrxList){
+  if(!delIds.includes(id)) delIds.push(id);
+ }
+ saveDel();
+ loadPay(1);
+}
+
+// হিস্টোরি লোড ও ডিসপ্লে
+async function loadPay(silent){
+ const v=$('#v');if(!silent)v.innerHTML='<p>লোড হচ্ছে…</p>';
+ try{
+  const d=await rpc('gw_list',{p_secret:cfg.secret});
+  // ডিলিট করা ট্রানজেকশন ফিল্টার আউট
+  const filtered = d.filter(x=>!delIds.includes(x.trx_id));
+  const rows = filtered.filter(x=>flt=='all'||(flt=='used')==x.used);
+  const tot=a=>a.reduce((t,x)=>t+Number(x.amount||0),0);
+  if(tab!=1)return;
+
+  const currentTrxIds = JSON.stringify(filtered.map(x=>x.trx_id)).replace(/"/g,'&quot;');
+
+  v.innerHTML=`
+  <div id="offline-alert" class="offline-card" style="${isOnline?'display:none':'display:block'}">
+    <b>⚠️ ইন্টারনেট সংযোগ নেই</b>
+    <span>অনুগ্রহ করে ইন্টারনেট কানেক্ট করুন (কানেক্টেড নেট)।</span>
+  </div>
+  
+  <div class="row" style="margin-bottom:10px;">
+    <h2>পেমেন্ট হিস্টোরি</h2>
+    ${filtered.length?`<button class="btn-clear-all" onclick="clearAllHistory(${currentTrxIds})">সব মুছুন</button>`:''}
+  </div>
+  
+  <p><small>মোট ${filtered.length}টি (৳${tot(filtered)}) · ব্যবহৃত ${filtered.filter(x=>x.used).length}টি · অব্যবহৃত ${filtered.filter(x=>!x.used).length}টি</small></p>
+  <div class="chips">${[['all','সব'],['unused','অব্যবহৃত'],['used','ব্যবহৃত']].map(([k,n])=>`<button class="${flt==k?'on':''}" onclick="flt='${k}';loadPay()">${n}</button>`).join('')}</div>`+
+  (rows.map(x=>`
+    <div class="card">
+      <div class="row">
+        <b>${x.provider=='bkash'?'bKash':'Nagad'} ৳${x.amount}</b>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="tag ${x.used?'u':'n'}">${x.used?'ব্যবহৃত':'অব্যবহৃত'}</span>
+          <button class="btn-del" title="মুছে ফেলুন" onclick="delPay('${esc(x.trx_id)}')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
+        </div>
+      </div>
+      <small>${esc(x.trx_id)} · ${esc(x.sender||'-')}${x.buyer?'<br><b>'+esc(x.buyer)+' → '+esc((x.rank_name||'').trim())+'</b>'+(x.plan?' ('+esc(x.plan)+')':''):''}<br>${new Date(x.created_at).toLocaleString('bn-BD')}</small>
+    </div>`).join('')||'<p>এখনো কিছু নেই বা সব মুছে ফেলা হয়েছে।</p>')
+ }catch(e){
+  if(!silent)v.innerHTML=`
+  <div id="offline-alert" class="offline-card" style="display:block">
+    <b>⚠️ ইন্টারনেট সংযোগ নেই</b>
+    <span>সার্ভার থেকে হিস্টোরি লোড করতে ইন্টারনেট কানেক্ট করুন (কানেক্টেড নেট)।</span>
+  </div>
+  <p>লোড হয়নি। ইন্টারনেট কানেক্ট করে পুনরায় চেষ্টা করুন।</p>`
+ }
+}
+
+// সেটিংস স্ক্রিন: ক্রেডেনশিয়ালস সম্পূর্ণ হাইড/লক করা
+const set=()=>`<h2>সেটিংস ও নিরাপত্তা</h2>
+<div class="card">
+<div class="notice-box">🔒 <b>সুরক্ষিত মোড সক্রিয়:</b> সার্ভার URL, API Key ও সিক্রেট সুরক্ষিত রাখা হয়েছে। কেউ দেখতে বা ডিলিট করতে পারবে না। পরিবর্তন করতে চাইলে নতুন ভ্যালু দিন।</div>
+<label>Supabase URL <span class="badge-lock">🔒 সংরক্ষিত ও সক্রিয়</span></label>
+<input id="u" type="password" placeholder="•••••••••••••••••••••••• (সুরক্ষিত)">
+<label>API Key (anon / publishable) <span class="badge-lock">🔒 সংরক্ষিত ও সক্রিয়</span></label>
+<input id="k" type="password" placeholder="•••••••••••••••••••••••• (সুরক্ষিত)">
+<label>অ্যাডমিন সিক্রেট <span class="badge-lock">🔒 সংরক্ষিত ও সক্রিয়</span></label>
+<input id="s" type="password" placeholder="•••••••••••••••••••••••• (সুরক্ষিত)">
+<button class="btn" onclick="saveCfg()">নতুন কী আপডেট ও টেস্ট করুন</button>
+<p id="r"></p>
+</div>`;
+
+async function saveCfg(){
+ const newU=$('#u').value.trim();
+ const newK=$('#k').value.trim();
+ const newS=$('#s').value.trim();
+ 
+ if(newU) cfg.url=newU;
+ if(newK) cfg.key=newK;
+ if(newS) cfg.secret=newS;
+ 
+ L.gwcfg=JSON.stringify(cfg);
+ 
+ $('#u').value='';
+ $('#k').value='';
+ $('#s').value='';
+ 
+ const r=$('#r');
+ r.textContent='টেস্ট করা হচ্ছে…';
+ try{
+  const d=await rpc('gw_list',{p_secret:cfg.secret});
+  r.textContent='✅ সফলভাবে কানেক্ট হয়েছে ('+d.length+'টি পেমেন্ট পাওয়া গেছে)। কী হাইড করা আছে।';
+  sync();
+ }catch(e){
+  r.textContent='❌ কানেক্ট হয়নি। নতুন URL বা কী ঠিক আছে কিনা দেখুন।'
+ }
+}
+
+setInterval(()=>{if(tab==1&&!document.hidden)loadPay(1)},15000);
+
+function render(){
+ document.querySelectorAll('nav button').forEach((b,i)=>b.classList.toggle('on',i==tab));
+ if(tab==1)return loadPay();
+ $('#v').innerHTML=tab?set():home()}
+const go=n=>{tab=n;render()};
+
+tab=0;
+render();sync();
+
+// অ্যানিমেটেড স্প্ল্যাশ লোডিং স্ক্রিন হাইড করার টাইমার
+window.addEventListener('load',()=>{
+ setTimeout(()=>{
+  const s=$('#splash-overlay');
+  if(s) s.classList.add('fade-out');
+ },750);
+});
+</script></body></html>

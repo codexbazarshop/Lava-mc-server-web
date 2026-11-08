@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#E2136E</color>
+    <color name="primary_dark">#B30E56</color>
+    <color name="accent">#F6921E</color>
+    <color name="progress_bar_color">#E2136E</color>
+    <color name="window_background">#F3F4F7</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
